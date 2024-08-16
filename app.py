@@ -42,6 +42,7 @@ st.markdown("""
             padding: 20px;
             border-radius: 10px;
             border: 1px solid #ddd;
+            color: white;
         }
     </style>
 """, unsafe_allow_html=True)
@@ -74,6 +75,7 @@ if groq_api_key.strip():
         elif not validators.url(generic_url):
             st.error("Please enter a valid URL. It can be a YT video URL or website URL")
         else:
+            ## New try block with enhanced error handling
             try:
                 with st.spinner("Fetching and summarizing content..."):
                     if loading_animation:
@@ -81,7 +83,11 @@ if groq_api_key.strip():
 
                     ## Loading the website or YT video data
                     if "youtube.com" in generic_url:
-                        loader = YoutubeLoader.from_youtube_url(generic_url, add_video_info=True)
+                        try:
+                            loader = YoutubeLoader.from_youtube_url(generic_url, add_video_info=True)
+                        except Exception as e:
+                            st.error("Failed to load YouTube video. Please try another URL.")
+                            raise e
                     else:
                         loader = UnstructuredURLLoader(urls=[generic_url], ssl_verify=False,
                                                        headers={"User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 13_5_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Safari/537.36"})
@@ -94,7 +100,7 @@ if groq_api_key.strip():
                     st.markdown("---")  # Add a separator
                     st.markdown("### 🎉 Summary")
                     st.markdown('<div class="summary-box">{}</div>'.format(output_summary), unsafe_allow_html=True)
-                    
+
                     if success_animation:
                         st_lottie(success_animation, height=150, key="success")
 
